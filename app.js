@@ -5,7 +5,7 @@ const port = process.env.PORT || 5000
 
 const mongo_url = process.env.MONGODB_URL;
 
-redisConnect();
+//redisConnect();
 mongoConnect(mongo_url);
 
 

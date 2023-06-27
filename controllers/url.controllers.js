@@ -1,28 +1,62 @@
 const urlSchema = require('../models/url.models');
 const { isAuthorized, getUserIdFromToken } = require('../utils/functions')
+const { handleErrors } = require('../services/auth.services');
 
 
 const createShortUrl = async(req, res) => {
-    let domain = !req.body.customdomain ? null : req.body.customdomain;
-    const userID = getUserIdFromToken(req.session.token);
+
+    try {
+        let domain = !req.body.customdomain ? null : req.body.customdomain;
+        const userID = getUserIdFromToken(req.headers.token);
 
 
-    await urlSchema.create({ full: req.body.fullUrl, domain: domain, userID: userID });
-    res.redirect('/');
+        const url = await urlSchema.create({ full: req.body.fullUrl, domain: domain, userID: userID });
+        if (url) {
+
+            res.status(200).json({ message: "url shortened successfully", url: url });
+        } else {
+
+            res.status(401).json({ message: "something went wrong" })
+        }
+
+    } catch (error) {
+
+        const errors = handleErrors(error);
+        return res.status(400).json({ errors });
+    }
+
 }
 
 const createCustomShortUrl = async(req, res) => {
-    let domain = !req.body.customdomain ? null : req.body.customdomain;
-    const userID = getUserIdFromToken(req.session.token);
+    try {
 
-    const domainCheck = await urlSchema.find({ domain: domain })
-    console.log(typeof domainCheck)
-    if (Object.keys(domainCheck).length === 0) {
-        await urlSchema.create({ full: req.body.fullUrl, domain: domain, userID: userID });
-        res.redirect('/');
-    } else {
-        const shortUrls = await getCustomUrls(userID)
-        res.render('custom', { message: "Custom keyword already in use", shortUrls: shortUrls })
+        let domain = req.body.customdomain;
+        let full = req.body.fullUrl;
+        console.log(req.body)
+
+        if (!domain == null && !domain === undefined && !full == null && !full === undefined) {
+
+            res.status(401).json({ message: "please provide valid input" })
+
+        } else {
+            const userID = getUserIdFromToken(req.headers.token);
+
+            const domainCheck = await urlSchema.find({ domain: domain });
+
+            if (Object.keys(domainCheck).length === 0) {
+                const url = await urlSchema.create({ full: req.body.fullUrl, domain: domain, userID: userID });
+                if (url) { res.status(200).json({ message: "url shortened successfully", url: url }) } else { res.status(401).json({ message: "Something went wrong" }) }
+
+            } else {
+                const shortUrls = await getCustomUrls(userID)
+                res.status(401).json({ message: "Custom keyword already in use" })
+            }
+
+        }
+
+
+    } catch (error) {
+
     }
 
 }

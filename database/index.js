@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
-const redis = require('redis');
 
-const redisConnect = () => {
-    const redisClient = redis.createClient({
-        url: process.env.REDIS_URL
-    });
-    redisClient.connect().then(() => {
+
+
+const redisConnect = async(redisClient) => {
+
+    await redisClient.connect().then(() => {
         console.log('Connected to Redis');
     }).catch((err) => {
         console.log(err.message);

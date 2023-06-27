@@ -61,7 +61,7 @@ module.exports.login = async(req, res) => {
                     firstname: user.firstname,
                     lastname: user.lastname
                 },
-                process.env.jwt_secret, {});
+                process.env.jwt_secret, { expiresIn: process.env.expiry });
             req.session.token = token;
 
             res.status(200).json({ message: "Logged in", token: token });

@@ -1,5 +1,10 @@
 const qrCode = require('qrcode');
 const jwt = require('jsonwebtoken');
+const redis = require('redis');
+
+const redisClient = redis.createClient({
+    url: process.env.REDIS_URL
+});
 
 
 
@@ -13,27 +18,35 @@ const generateQRCode = async(url) => {
 }
 
 const isAuthorized = (req, res, next) => {
-    if (!req.session.token) {
-        res.render('login')
-    } else {
-        //console.log(req.session.token)
+    const token = req.headers.token
+    try {
+        jwt.verify(token, process.env.jwt_secret);
+
         next();
+    } catch (err) {
+        res.status(401).json({ message: "Invalid or expired token" })
     }
-
-    // try {
-    //     jwt.verify(token, process.env.jwt_secret);
-
-    //     next();
-    // } catch (err) {
-    //     
-    // }
 }
 
 const getUserIdFromToken = (token) => {
     const decodedToken = jwt.decode(token);
-
     const userId = decodedToken.userid;
     return userId;
 }
 
-module.exports = { generateQRCode, isAuthorized, getUserIdFromToken, };
+
+const cache = (key, cb) => {
+    return new Promise((resolve, reject) => {
+        redisClient.get(key, async(error, data) => {
+            if (error) { return reject(error) }
+            if (data != null) { console.log(hit); return resolve(JSON.parse(data)) }
+            console.log("miss");
+            const freshData = await cb();
+
+            redisClient.set(key, 60, JSON.stringify(freshData))
+            resolve(freshData);
+        })
+    })
+}
+
+module.exports = { generateQRCode, isAuthorized, getUserIdFromToken, cache };

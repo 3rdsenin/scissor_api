@@ -17,11 +17,11 @@ const urlSchema = new Schema({
     },
     userID: {
         type: String,
-        required: true,
+        required: [true, 'Please provide userid'],
     },
     full: {
         type: String,
-        required: true,
+        required: [true, 'Please enter full url'],
     },
 
     short: {
