@@ -46,7 +46,7 @@ router.post('/', isAuthorized, async(req, res) => {
         console.log("miss");
         const userID = getUserIdFromToken(req.headers.token);
         const shortUrls = await urls.getAllUrls(userID);
-        await redisClient.setEx(`urls?userID=${userID}`, 120, JSON.stringify(shortUrls));
+        await redisClient.setEx(`urls?userID=${userID}`, 60, JSON.stringify(shortUrls));
         res.json({ shortUrls: shortUrls });
     }
 })
@@ -62,7 +62,7 @@ router.get('/', isAuthorized, async(req, res) => {
         console.log("miss");
         const userID = getUserIdFromToken(req.headers.token);
         const shortUrls = await urls.getAllUrls(userID);
-        await redisClient.setEx(`urls?userID=${userID}`, 120, JSON.stringify(shortUrls));
+        await redisClient.setEx(`urls?userID=${userID}`, 60, JSON.stringify(shortUrls));
         res.json({ shortUrls: shortUrls });
     }
 })
