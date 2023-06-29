@@ -5,7 +5,7 @@ const isUrlValid = require('url-validation')
 
 
 const createShortUrl = async(req, res) => {
-
+    console.log(req.body)
     try {
         let domain = !req.body.customdomain ? null : req.body.customdomain;
         const userID = getUserIdFromToken(req.headers.token);
@@ -13,14 +13,14 @@ const createShortUrl = async(req, res) => {
         if (validUrl === true) {
             const url = await urlSchema.create({ full: req.body.fullUrl, domain: domain, userID: userID });
             if (url) {
-
-                res.status(200).json({ message: "url shortened successfully", url: url });
+                const urls = await getAllUrls(userID)
+                res.status(200).json({ message: "url shortened successfully", url: urls });
             } else {
 
-                res.status(401).json({ message: "something went wrong" })
+                res.status(401).json({ error: "something went wrong" })
             }
         } else {
-            res.status(401).json({ message: "please provide a valid url" })
+            res.status(401).json({ error: "please provide a valid url" })
         }
 
 

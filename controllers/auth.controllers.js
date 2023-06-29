@@ -22,13 +22,13 @@ module.exports.signup = async(req, res) => {
 
         }
 
-        return res.status(400).json({ message: "Something went wrong" });
+        return res.json({ message: "Something went wrong" });
 
 
 
     } catch (error) {
         const errors = handleErrors(error);
-        return res.status(400).json({ err: errors });
+        return res.json({ error_messages: errors });
 
 
     }
@@ -48,10 +48,14 @@ module.exports.login = async(req, res) => {
         }
 
         const user = await UserModel.findOne({ email: email });
-
+        //console.log(user);
 
         if (!user) {
-            return res.status(400).json({ message: "Wrong email" });
+            return res.json({ message: "Wrong email" });
+        }
+
+        if (user && await (bcrypt.compare(password, user.password)) === false) {
+            return res.json({ message: "Wrong password" });
         }
 
         if (user && await (bcrypt.compare(password, user.password))) {
@@ -64,7 +68,7 @@ module.exports.login = async(req, res) => {
                 process.env.jwt_secret, { expiresIn: process.env.expiry });
             req.session.token = token;
 
-            res.status(200).json({ message: "Logged in", token: token });
+            res.status(200).json({ success: "Logged in", token: token });
 
         }
 
