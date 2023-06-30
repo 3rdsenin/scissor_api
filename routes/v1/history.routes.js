@@ -15,7 +15,7 @@ Router.get('/', isAuthorized, async(req, res) => {
 
 })
 
-Router.get('/:domain', async(req, res) => {
+Router.get('/:domain', isAuthorized, async(req, res) => {
     try {
         const domain = req.params.domain;
         const allUrls = await urls.find({ domain });
